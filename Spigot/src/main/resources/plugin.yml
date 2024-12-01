@@ -1,5 +1,5 @@
 name: BitsPreferences
-version: '2024.11'
+version: '2024.12'
 main: net.bitbylogic.preferences.BitsPreferences
 api-version: '1.21'
 authors: [BitByLogic]
