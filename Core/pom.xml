@@ -74,6 +74,14 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub BitByLogics Maven Packages</name>
+            <url>https://maven.pkg.github.com/bitbylogics/apibylogic</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.bitbylogic</groupId>
