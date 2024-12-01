@@ -37,7 +37,7 @@ public class Tests {
             hikariAPI = new HikariAPI(DATABASE_FILE);
             container = new PreferenceContainer(hikariAPI);
 
-            Thread.sleep(10);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -33,7 +33,7 @@ public class Tests {
         this.plugin = MockBukkit.loadWithConfig(BitsPreferences.class, TEST_CONFIG);
 
         try {
-            Thread.sleep(10);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
