@@ -2,8 +2,8 @@
 <img src="https://i.imgur.com/mSJCRZ2.png" style="width: 20%;" alt="Icon">
 
 ## Bit's Preferences    
-[![Build](https://img.shields.io/github/actions/workflow/status/BitByLogics/Bits-Preferences/maven.yml?branch=master)](https://github.com/BitByLogics/Bits-Preferences/actions)
-![Issues](https://img.shields.io/github/issues-raw/Bits-Preferences/issues)
+[![Build](https://img.shields.io/github/actions/workflow/status/BitByLogics/Bits-Preferences/.github/workflows/maven.yml?branch=master)](https://github.com/BitByLogics/Bits-Preferences/actions)
+![Issues](https://img.shields.io/github/issues-raw/BitByLogics/Bits-Preferences)
 [![Stars](https://img.shields.io/github/stars/BitByLogics/Bits-Preferences)](https://github.com/BitByLogics/Bits-Preferences/stargazers)
 [![Chat)](https://img.shields.io/discord/1310486866272981002?logo=discord&logoColor=white)](https://discord.gg/syngw2UQUd)
 
