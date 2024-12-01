@@ -21,6 +21,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub BitByLogics Maven Packages</name>
+            <url>https://maven.pkg.github.com/bitbylogics/apibylogic</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Lombok -->
         <dependency>
@@ -28,6 +36,13 @@
             <artifactId>lombok</artifactId>
             <version>1.18.32</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- APIByLogic -->
+        <dependency>
+            <groupId>net.bitbylogic</groupId>
+            <artifactId>apibylogic-core</artifactId>
+            <version>2024.12</version>
         </dependency>
 
         <!-- IntelliJ Annotations -->
