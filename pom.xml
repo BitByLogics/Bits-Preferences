@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.bitbylogic</groupId>
-    <artifactId>BitsPreferences</artifactId>
-    <version>2024.11</version>
+    <artifactId>bitspreferences</artifactId>
+    <version>2024.12</version>
     <packaging>pom</packaging>
 
     <name>Bit's Preferences</name>
@@ -28,6 +28,14 @@
             <url>https://maven.pkg.github.com/bitbylogics/apibylogic</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub BitByLogics Maven Packages</name>
+            <url>https://maven.pkg.github.com/bitbylogics/bits-preferences</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <!-- Lombok -->

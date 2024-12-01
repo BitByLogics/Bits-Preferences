@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>net.bitbylogic</groupId>
-        <artifactId>BitsPreferences</artifactId>
-        <version>2024.11</version>
+        <artifactId>bitspreferences</artifactId>
+        <version>2024.12</version>
     </parent>
 
-    <artifactId>BitsPreferences-Spigot</artifactId>
+    <artifactId>bitspreferences-spigot</artifactId>
 
     <properties>
         <java.version>21</java.version>
@@ -101,8 +101,8 @@
         <!-- Core -->
         <dependency>
             <groupId>net.bitbylogic</groupId>
-            <artifactId>BitsPreferences-Core</artifactId>
-            <version>2024.11</version>
+            <artifactId>bitspreferences-core</artifactId>
+            <version>2024.12</version>
         </dependency>
 
         <!-- Paper -->

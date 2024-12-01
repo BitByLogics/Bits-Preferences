@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.bitbylogic</groupId>
-        <artifactId>BitsPreferences</artifactId>
-        <version>2024.11</version>
+        <artifactId>bitspreferences</artifactId>
+        <version>2024.12</version>
     </parent>
 
-    <artifactId>BitsPreferences-Core</artifactId>
+    <artifactId>bitspreferences-core</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
