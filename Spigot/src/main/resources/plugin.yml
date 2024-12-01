@@ -1,0 +1,9 @@
+name: BitsPreferences
+version: '2024.11'
+main: net.bitbylogic.preferences.BitsPreferences
+api-version: '1.21'
+authors: [BitByLogic]
+description: A dynamic lightweight preference plugin!
+libraries:
+  - "com.zaxxer:HikariCP:5.0.1"
+  - "org.xerial:sqlite-jdbc:3.46.0.0"
