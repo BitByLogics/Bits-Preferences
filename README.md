@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://i.imgur.com/hy4lp6A.jpeg" style="width: 20%;" alt="Icon">
+<img src="https://i.imgur.com/mSJCRZ2.png" style="width: 20%;" alt="Icon">
 
 ## Bit's Preferences    
 [![Build](https://img.shields.io/github/actions/workflow/status/BitByLogics/Bits-Preferences/.github/workflows/maven.yml?branch=master)](https://github.com/BitByLogics/Bits-Preferences/actions)
