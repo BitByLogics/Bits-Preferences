@@ -22,12 +22,6 @@
     </properties>
 
     <repositories>
-        <repository>
-            <id>github</id>
-            <name>GitHub BitByLogics Maven Packages</name>
-            <url>https://maven.pkg.github.com/bitbylogics/apibylogic</url>
-        </repository>
-
         <!-- JitPack -->
         <repository>
             <id>jitpack.io</id>
@@ -40,7 +34,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
+            <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
 
