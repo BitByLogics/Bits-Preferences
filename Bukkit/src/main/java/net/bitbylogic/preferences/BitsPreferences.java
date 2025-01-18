@@ -2,7 +2,7 @@ package net.bitbylogic.preferences;
 
 import lombok.Getter;
 import lombok.NonNull;
-import net.bitbylogic.apibylogic.database.hikari.HikariAPI;
+import net.bitbylogic.orm.BormAPI;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,7 +16,7 @@ public class BitsPreferences extends JavaPlugin {
     @Getter
     private static BitsPreferences instance;
 
-    private HikariAPI hikariAPI;
+    private BormAPI bormAPI;
 
     @Getter
     private PreferenceContainer container;
@@ -26,10 +26,10 @@ public class BitsPreferences extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
-        initializeHikari(hikariAPI -> {
-            this.hikariAPI = hikariAPI;
+        initializeBorm(bormAPI -> {
+            this.bormAPI = bormAPI;
 
-            container = new PreferenceContainer(hikariAPI);
+            container = new PreferenceContainer(bormAPI);
         });
 
         if (!getConfig().getBoolean("Track-Metrics", true)) {
@@ -42,43 +42,43 @@ public class BitsPreferences extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        hikariAPI.getHikari().close();
+        bormAPI.close();
     }
 
-    private void initializeHikari(@NonNull Consumer<HikariAPI> completeConsumer) {
+    private void initializeBorm(@NonNull Consumer<BormAPI> completeConsumer) {
         if (!getConfig().isSet("Database-Details.Address") || getConfig().getString("Database-Details.Address").isEmpty()
                 || !getConfig().isSet("Database-Details.Database") || getConfig().getString("Database-Details.Database").isEmpty()) {
             getLogger().severe("Database details not provided, falling back to SQLite!");
-            completeConsumer.accept(new HikariAPI(new File("database.sqlite")));
+            completeConsumer.accept(new BormAPI(new File("database.sqlite")));
             return;
         }
 
-        ConfigurationSection hikariSection = getConfig().getConfigurationSection("Database-Details");
+        ConfigurationSection databaseSections = getConfig().getConfigurationSection("Database-Details");
 
-        if (hikariSection == null) {
+        if (databaseSections == null) {
             getLogger().severe("Unable to connect to SQL, falling back to SQLite!");
-            completeConsumer.accept(new HikariAPI(new File("database.sqlite")));
+            completeConsumer.accept(new BormAPI(new File("database.sqlite")));
             return;
         }
 
-        CompletableFuture.supplyAsync(() -> new HikariAPI(
-                        hikariSection.getString("Address"), hikariSection.getString("Database"),
-                        hikariSection.getString("Port"), hikariSection.getString("Username"),
-                        hikariSection.getString("Password")))
-                .thenAccept((hikariAPI) -> {
-                    if (hikariAPI == null) {
+        CompletableFuture.supplyAsync(() -> new BormAPI(
+                        databaseSections.getString("Address"), databaseSections.getString("Database"),
+                        databaseSections.getString("Port"), databaseSections.getString("Username"),
+                        databaseSections.getString("Password")))
+                .thenAccept((bormAPI) -> {
+                    if (bormAPI == null) {
                         getLogger().severe("Unable to connect to SQL, falling back to SQLite!");
-                        completeConsumer.accept(new HikariAPI(new File("database.sqlite")));
+                        completeConsumer.accept(new BormAPI(new File("database.sqlite")));
                         return;
                     }
 
-                    this.hikariAPI = hikariAPI;
+                    this.bormAPI = bormAPI;
 
-                    completeConsumer.accept(hikariAPI);
+                    completeConsumer.accept(bormAPI);
                 }).exceptionally(e -> {
                     getLogger().severe("Error connecting to SQL: " + e.getMessage() + ", falling back to SQLite!");
                     e.printStackTrace();
-                    completeConsumer.accept(new HikariAPI(new File("database.sqlite")));
+                    completeConsumer.accept(new BormAPI(new File("database.sqlite")));
                     return null;
                 });
     }

@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.bitbylogic</groupId>
-    <artifactId>bitspreferences</artifactId>
-    <version>2024.12</version>
+    <artifactId>bits-preferences</artifactId>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>Bit's Preferences</name>
 
     <modules>
         <module>Core</module>
-        <module>Spigot</module>
+        <module>Bukkit</module>
     </modules>
 
     <properties>
@@ -27,15 +27,13 @@
             <name>GitHub BitByLogics Maven Packages</name>
             <url>https://maven.pkg.github.com/bitbylogics/apibylogic</url>
         </repository>
-    </repositories>
 
-    <distributionManagement>
+        <!-- JitPack -->
         <repository>
-            <id>github</id>
-            <name>GitHub BitByLogics Maven Packages</name>
-            <url>https://maven.pkg.github.com/bitbylogics/bits-preferences</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
-    </distributionManagement>
+    </repositories>
 
     <dependencies>
         <!-- Lombok -->
@@ -46,11 +44,11 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- APIByLogic -->
+        <!-- Bit's ORM -->
         <dependency>
-            <groupId>net.bitbylogic</groupId>
-            <artifactId>apibylogic-core</artifactId>
-            <version>2024.12</version>
+            <groupId>com.github.BitByLogics</groupId>
+            <artifactId>Bits-ORM</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
         <!-- IntelliJ Annotations -->

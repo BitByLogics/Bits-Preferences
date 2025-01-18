@@ -2,12 +2,12 @@ package net.bitbylogic.preferences;
 
 import lombok.Getter;
 import lombok.NonNull;
-import net.bitbylogic.apibylogic.database.hikari.HikariAPI;
-import net.bitbylogic.apibylogic.util.StringProcessor;
-import net.bitbylogic.apibylogic.util.reflection.ReflectionUtil;
+import net.bitbylogic.orm.BormAPI;
 import net.bitbylogic.preferences.data.Preference;
 import net.bitbylogic.preferences.data.PreferenceType;
 import net.bitbylogic.preferences.database.PreferenceTable;
+import net.bitbylogic.utils.StringProcessor;
+import net.bitbylogic.utils.reflection.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -27,14 +27,14 @@ public class PreferenceContainer {
 
     /**
      * Constructs a new {@code PreferenceContainer} and registers the {@link PreferenceTable}
-     * with the provided {@link HikariAPI} instance. The {@link PreferenceTable} is assigned
+     * with the provided {@link BormAPI} instance. The {@link PreferenceTable} is assigned
      * to the internal table field after registration.
      *
-     * @param hikariAPI The {@link HikariAPI} instance used to register the {@link PreferenceTable}.
-     * @throws NullPointerException If {@code hikariAPI} is {@code null}.
+     * @param bormAPI The {@link BormAPI} instance used to register the {@link PreferenceTable}.
+     * @throws NullPointerException If {@code bormAPI} is {@code null}.
      */
-    public PreferenceContainer(@NonNull HikariAPI hikariAPI) {
-        hikariAPI.registerTable(PreferenceTable.class, preferenceTable -> this.table = preferenceTable);
+    public PreferenceContainer(@NonNull BormAPI bormAPI) {
+        bormAPI.registerTable(PreferenceTable.class, preferenceTable -> this.table = preferenceTable);
     }
 
     /**

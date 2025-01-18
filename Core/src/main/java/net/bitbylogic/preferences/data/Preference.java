@@ -4,27 +4,27 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bitbylogic.apibylogic.database.hikari.annotation.HikariStatementData;
-import net.bitbylogic.apibylogic.database.hikari.data.HikariObject;
+import net.bitbylogic.orm.annotation.Column;
+import net.bitbylogic.orm.data.BormObject;
 
 import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Preference extends HikariObject {
+public class Preference extends BormObject {
 
-    @HikariStatementData(dataType = "VARCHAR(36)", primaryKey = true)
+    @Column(primaryKey = true)
     private UUID id;
 
-    @HikariStatementData(dataType = "VARCHAR(36)", allowNull = false)
+    @Column
     private UUID userId;
 
-    @HikariStatementData(dataType = "VARCHAR(150)", allowNull = false)
+    @Column
     private String typeId;
 
     @Setter
-    @HikariStatementData(dataType = "MEDIUMTEXT")
+    @Column(dataType = "MEDIUMTEXT")
     private Object value;
 
 }

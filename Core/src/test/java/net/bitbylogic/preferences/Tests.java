@@ -1,11 +1,10 @@
 package net.bitbylogic.preferences;
 
-import net.bitbylogic.apibylogic.database.hikari.HikariAPI;
+import net.bitbylogic.orm.BormAPI;
 import net.bitbylogic.preferences.data.PreferenceType;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,7 +23,7 @@ public class Tests {
 
     private static final UUID TEST_USER_ID = UUID.randomUUID();
 
-    private static HikariAPI hikariAPI;
+    private static BormAPI bormAPI;
     private static PreferenceContainer container;
 
     @BeforeAll
@@ -34,8 +33,8 @@ public class Tests {
         }
 
         try {
-            hikariAPI = new HikariAPI(DATABASE_FILE);
-            container = new PreferenceContainer(hikariAPI);
+            bormAPI = new BormAPI(DATABASE_FILE);
+            container = new PreferenceContainer(bormAPI);
 
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -45,7 +44,7 @@ public class Tests {
 
     @AfterAll
     public void cleanup() {
-        hikariAPI.getHikari().close();
+        bormAPI.close();
 
         if (!DATABASE_FILE.exists()) {
             return;

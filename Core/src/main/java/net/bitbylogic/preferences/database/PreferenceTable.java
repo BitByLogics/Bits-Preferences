@@ -1,22 +1,22 @@
 package net.bitbylogic.preferences.database;
 
 import lombok.NonNull;
-import net.bitbylogic.apibylogic.database.hikari.HikariAPI;
-import net.bitbylogic.apibylogic.database.hikari.data.HikariTable;
-import net.bitbylogic.apibylogic.util.Pair;
+import net.bitbylogic.orm.BormAPI;
+import net.bitbylogic.orm.data.BormTable;
 import net.bitbylogic.preferences.data.Preference;
+import net.bitbylogic.utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class PreferenceTable extends HikariTable<Preference> {
+public class PreferenceTable extends BormTable<Preference> {
 
     protected final HashMap<Pair<UUID, String>, Preference> preferences = new HashMap<>();
 
-    public PreferenceTable(@NonNull HikariAPI hikariAPI) {
-        super(hikariAPI, Preference.class, "preferences");
+    public PreferenceTable(@NonNull BormAPI bormAPI) {
+        super(bormAPI, Preference.class, "preferences");
     }
 
     /**
