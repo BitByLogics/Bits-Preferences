@@ -20,7 +20,11 @@ public class Tests {
             "test_preference",
             "Test Preference",
             Boolean.class,
-            true
+            true,
+            (type, object) -> switch (type) {
+                case SERIALIZE -> object.toString();
+                case DESERIALIZE -> Boolean.parseBoolean(object.toString());
+            }
     );
 
     private static final UUID TEST_USER_ID = UUID.randomUUID();

@@ -6,7 +6,7 @@ import net.bitbylogic.orm.BormAPI;
 import net.bitbylogic.preferences.data.Preference;
 import net.bitbylogic.preferences.data.PreferenceType;
 import net.bitbylogic.preferences.database.PreferenceTable;
-import net.bitbylogic.utils.StringProcessor;
+import net.bitbylogic.preferences.serialize.SerializeType;
 import net.bitbylogic.utils.reflection.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,12 +101,7 @@ public class PreferenceContainer {
             }
 
             Object value = optionalValue.get();
-
-            if (!ReflectionUtil.isType(value, type.getDataClass())) {
-                value = StringProcessor.findAndProcess(type.getDataClass(), value.toString());
-            }
-
-            return (T) value;
+            return (T) type.getProcessor().serialize(SerializeType.DESERIALIZE, value);
         } catch (ClassCastException e) {
             LOGGER.log(Level.SEVERE, "Unable to cast preference " + typeId);
             e.printStackTrace();
@@ -151,16 +146,17 @@ public class PreferenceContainer {
             return;
         }
 
+        String processedValue = (String) type.getProcessor().serialize(SerializeType.SERIALIZE, newValue);
         Optional<Preference> optionalPreference = table.getPreferenceData(userId, type.getId());
 
         if (optionalPreference.isEmpty()) {
-            Preference preference = new Preference(UUID.randomUUID(), userId, type.getId(), newValue);
+            Preference preference = new Preference(UUID.randomUUID(), userId, type.getId(), processedValue);
             table.add(preference);
             return;
         }
 
         Preference preference = optionalPreference.get();
-        preference.setValue(newValue);
+        preference.setValue(processedValue);
         preference.save();
     }
 
