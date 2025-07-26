@@ -20,6 +20,7 @@ public class PreferenceContainer {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    @Getter
     private final HashMap<String, PreferenceType> preferenceTypes = new HashMap<>();
 
     @Getter
