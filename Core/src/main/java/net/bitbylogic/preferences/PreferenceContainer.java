@@ -35,7 +35,7 @@ public class PreferenceContainer {
      * @throws NullPointerException If {@code bormAPI} is {@code null}.
      */
     public PreferenceContainer(@NonNull BormAPI bormAPI) {
-        bormAPI.registerTable(PreferenceTable.class, preferenceTable -> this.table = preferenceTable);
+        bormAPI.registerTable(PreferenceTable.class).thenAccept(preferenceTable -> table = preferenceTable);
     }
 
     /**
