@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.BitByLogics</groupId>
             <artifactId>Bits-ORM</artifactId>
-            <version>1.2.0</version>
+            <version>212eefdcdd</version>
         </dependency>
 
         <!-- IntelliJ Annotations -->
