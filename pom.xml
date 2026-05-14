@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>1.18.44</version>
             <scope>provided</scope>
         </dependency>
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.BitByLogics</groupId>
             <artifactId>Bits-ORM</artifactId>
-            <version>212eefdcdd</version>
+            <version>682f879e6d</version>
         </dependency>
 
         <!-- IntelliJ Annotations -->
