@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          server-id: minebit
+          server-username: MINEBIT_USERNAME
+          server-password: MINEBIT_PASSWORD
+      - name: Check tag matches project version
+        run: |
+          VERSION=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout)
+          if [ "$VERSION" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match pom version ${VERSION}"
+            exit 1
+          fi
+      - name: Deploy
+        run: mvn -B deploy
+        env:
+          MINEBIT_USERNAME: ${{ secrets.MINEBIT_USERNAME }}
+          MINEBIT_PASSWORD: ${{ secrets.MINEBIT_PASSWORD }}
+      - name: Create GitHub release
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            Core/target/bits-preferences-core-${GITHUB_REF_NAME}.jar \
+            Core/target/bits-preferences-core-${GITHUB_REF_NAME}-sources.jar \
+            Core/target/bits-preferences-core-${GITHUB_REF_NAME}-javadoc.jar \
+            Bukkit/target/bits-preferences-bukkit-${GITHUB_REF_NAME}.jar \
+            Bukkit/target/bits-preferences-bukkit-${GITHUB_REF_NAME}-sources.jar \
+            Bukkit/target/bits-preferences-bukkit-${GITHUB_REF_NAME}-javadoc.jar \
+            --title "${GITHUB_REF_NAME}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

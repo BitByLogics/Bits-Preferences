@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Lombok @NonNull throws NullPointerException from constructors. Finalizer attacks do not apply to this code. -->
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!-- The preference table is a shared service object and is intentionally returned as is. -->
+    <Match>
+        <Class name="net.bitbylogic.preferences.PreferenceContainer"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+
+    <!-- setPreference is synchronized only to serialize writes. Reads use concurrent collections and a volatile table. -->
+    <Match>
+        <Class name="net.bitbylogic.preferences.PreferenceContainer"/>
+        <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
+    </Match>
+
+    <!-- Standard Bukkit plugin singleton: the instance is set in onEnable and cleared in onDisable. -->
+    <Match>
+        <Class name="net.bitbylogic.preferences.BitsPreferences"/>
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD,MS_EXPOSE_REP,SSD_DO_NOT_USE_INSTANCE_LOCK_ON_SHARED_STATIC_DATA"/>
+    </Match>
+
+    <!-- The container is a shared service object and is intentionally returned as is. -->
+    <Match>
+        <Class name="net.bitbylogic.preferences.BitsPreferences"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+</FindBugsFilter>

@@ -11,5 +11,5 @@ Database-Details:
   Address: ""
   Database: ""
   Port: "3306"
-  Username: "test"
-  Password: "password"
+  Username: ""
+  Password: ""

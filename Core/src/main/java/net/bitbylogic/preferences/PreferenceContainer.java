@@ -10,32 +10,75 @@ import net.bitbylogic.preferences.serialize.SerializeType;
 import net.bitbylogic.utils.reflection.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PreferenceContainer {
 
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(PreferenceContainer.class.getName());
+
+    private final Map<String, PreferenceType> preferenceTypes = new ConcurrentHashMap<>();
 
     @Getter
-    private final HashMap<String, PreferenceType> preferenceTypes = new HashMap<>();
+    private volatile @Nullable PreferenceTable table;
 
-    @Getter
-    private @Nullable PreferenceTable table;
+    private boolean initialized;
 
     /**
-     * Constructs a new {@code PreferenceContainer} and registers the {@link PreferenceTable}
-     * with the provided {@link BormAPI} instance. The {@link PreferenceTable} is assigned
-     * to the internal table field after registration.
+     * Constructs a new {@code PreferenceContainer} without a database. Preference types can be registered
+     * immediately, values fall back to their defaults until {@link #initialize(BormAPI)} completes.
+     */
+    public PreferenceContainer() {
+    }
+
+    /**
+     * Constructs a new {@code PreferenceContainer} and immediately calls {@link #initialize(BormAPI)}.
      *
      * @param bormAPI The {@link BormAPI} instance used to register the {@link PreferenceTable}.
      * @throws NullPointerException If {@code bormAPI} is {@code null}.
      */
     public PreferenceContainer(@NonNull BormAPI bormAPI) {
+        initialize(bormAPI);
+    }
+
+    /**
+     * Registers the {@link PreferenceTable} with the provided {@link BormAPI}. The table becomes
+     * available once its data has been registered. Calling this more than once logs a warning and is ignored.
+     *
+     * @param bormAPI The {@link BormAPI} instance used to register the {@link PreferenceTable}.
+     * @throws NullPointerException If {@code bormAPI} is {@code null}.
+     */
+    public synchronized void initialize(@NonNull BormAPI bormAPI) {
+        if (initialized) {
+            LOGGER.log(Level.WARNING, "Preference container is already initialized.");
+            return;
+        }
+
+        initialized = true;
         bormAPI.registerTable(PreferenceTable.class, preferenceTable -> table = preferenceTable);
+    }
+
+    /**
+     * Checks whether the preference table is available for reading and writing.
+     *
+     * @return {@code true} if the table has been registered.
+     */
+    public boolean isReady() {
+        return table != null;
+    }
+
+    /**
+     * Retrieves a read-only view of all registered preference types.
+     *
+     * @return An unmodifiable view of the registered types, keyed by ID.
+     */
+    public Map<String, PreferenceType> getPreferenceTypes() {
+        return Collections.unmodifiableMap(preferenceTypes);
     }
 
     /**
@@ -47,12 +90,9 @@ public class PreferenceContainer {
      */
     public void registerPreferenceType(@NonNull PreferenceType... types) {
         for (PreferenceType type : types) {
-            if (preferenceTypes.containsKey(type.getId())) {
+            if (preferenceTypes.putIfAbsent(type.getId(), type) != null) {
                 LOGGER.log(Level.WARNING, "Skipped registering preference type: " + type.getId() + ", it's already registered.");
-                continue;
             }
-
-            preferenceTypes.put(type.getId(), type);
         }
     }
 
@@ -68,19 +108,18 @@ public class PreferenceContainer {
     }
 
     /**
-     * Retrieves the user's preference value for the specified type. If no preference is found in the
-     * database or if the preference type does not exist, the default value for the type is returned.
+     * Retrieves the user's preference value for the specified type. If no preference is stored, the
+     * table is not ready, or the stored value is invalid, the default value for the type is returned.
      *
      * @param <T>    The expected return type of the preference value.
      * @param userId The unique identifier of the user whose preference is being retrieved.
      * @param typeId The ID of the preference type to retrieve.
-     * @return The user's preference value, or the default value of the preference type if no value
-     * is found or the database is unavailable. Returns {@code null} if an error occurs or if
-     * the preference type does not exist.
+     * @return The user's preference value or the type's default value. Returns {@code null} only if the
+     * preference type does not exist or its default value is {@code null}.
      * @throws NullPointerException If either {@code userId} or {@code typeId} is {@code null}.
-     * @throws ClassCastException   If the retrieved value cannot be cast to the expected type {@code T}.
      */
-    public <T> T getPreference(@NonNull UUID userId, @NonNull String typeId) {
+    @SuppressWarnings("unchecked")
+    public <T> @Nullable T getPreference(@NonNull UUID userId, @NonNull String typeId) {
         Optional<PreferenceType> optionalType = getType(typeId);
 
         if (optionalType.isEmpty()) {
@@ -89,26 +128,31 @@ public class PreferenceContainer {
         }
 
         PreferenceType type = optionalType.get();
+        PreferenceTable currentTable = table;
 
-        if (table == null) {
+        if (currentTable == null) {
+            return (T) type.getDefaultValue();
+        }
+
+        Optional<Object> optionalValue = currentTable.getPreferenceData(userId, typeId).map(Preference::getValue);
+
+        if (optionalValue.isEmpty()) {
             return (T) type.getDefaultValue();
         }
 
         try {
-            Optional<Object> optionalValue = table.getPreferenceData(userId, typeId).map(Preference::getValue);
+            Object value = type.getProcessor().serialize(SerializeType.DESERIALIZE, optionalValue.get());
 
-            if (optionalValue.isEmpty()) {
+            if (value == null || !ReflectionUtil.isType(value, type.getDataClass())) {
+                LOGGER.log(Level.WARNING, "Stored value for preference " + typeId + " of user " + userId + " has an invalid type, using default.");
                 return (T) type.getDefaultValue();
             }
 
-            Object value = optionalValue.get();
-            return (T) type.getProcessor().serialize(SerializeType.DESERIALIZE, value);
-        } catch (ClassCastException e) {
-            LOGGER.log(Level.SEVERE, "Unable to cast preference " + typeId);
-            e.printStackTrace();
+            return (T) value;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Unable to deserialize preference " + typeId + " of user " + userId + ", using default.", e);
+            return (T) type.getDefaultValue();
         }
-
-        return null;
     }
 
     /**
@@ -122,7 +166,7 @@ public class PreferenceContainer {
      * @throws NullPointerException If any of the parameters {@code userId}, {@code typeId}, or
      *                              {@code newValue} is {@code null}.
      */
-    public void setPreference(@NonNull UUID userId, @NonNull String typeId, @NonNull Object newValue) {
+    public synchronized void setPreference(@NonNull UUID userId, @NonNull String typeId, @NonNull Object newValue) {
         Optional<PreferenceType> optionalType = getType(typeId);
 
         if (optionalType.isEmpty()) {
@@ -131,9 +175,10 @@ public class PreferenceContainer {
         }
 
         PreferenceType type = optionalType.get();
+        PreferenceTable currentTable = table;
 
-        if (table == null) {
-            LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " to " + newValue + " failed. Preference table is missing.");
+        if (currentTable == null) {
+            LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " to " + newValue + " failed. Preference table is not ready.");
             return;
         }
 
@@ -142,22 +187,34 @@ public class PreferenceContainer {
             return;
         }
 
-        if(!type.getAllowedValues().isEmpty() && !type.getAllowedValues().contains(newValue)) {
+        if (!type.getAllowedValues().isEmpty() && !type.getAllowedValues().contains(newValue)) {
             LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " to " + newValue + " failed. Disallowed value.");
             return;
         }
 
-        String processedValue = (String) type.getProcessor().serialize(SerializeType.SERIALIZE, newValue);
-        Optional<Preference> optionalPreference = table.getPreferenceData(userId, type.getId());
+        Object processedValue;
+
+        try {
+            processedValue = type.getProcessor().serialize(SerializeType.SERIALIZE, newValue);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " failed. Unable to serialize value.", e);
+            return;
+        }
+
+        if (!(processedValue instanceof String serializedValue)) {
+            LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " failed. Serializer must produce a String.");
+            return;
+        }
+
+        Optional<Preference> optionalPreference = currentTable.getPreferenceData(userId, type.getId());
 
         if (optionalPreference.isEmpty()) {
-            Preference preference = new Preference(UUID.randomUUID(), userId, type.getId(), processedValue);
-            table.add(preference);
+            currentTable.add(new Preference(UUID.randomUUID(), userId, type.getId(), serializedValue));
             return;
         }
 
         Preference preference = optionalPreference.get();
-        preference.setValue(processedValue);
+        preference.setValue(serializedValue);
         preference.save();
     }
 

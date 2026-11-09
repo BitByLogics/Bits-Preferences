@@ -6,14 +6,14 @@ import net.bitbylogic.orm.data.BormTable;
 import net.bitbylogic.preferences.data.Preference;
 import net.bitbylogic.utils.Pair;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PreferenceTable extends BormTable<Preference> {
 
-    protected final HashMap<Pair<UUID, String>, Preference> preferences = new HashMap<>();
+    protected final Map<Pair<UUID, String>, Preference> preferences = new ConcurrentHashMap<>();
 
     public PreferenceTable(@NonNull BormAPI bormAPI) {
         super(bormAPI, Preference.class, "preferences");

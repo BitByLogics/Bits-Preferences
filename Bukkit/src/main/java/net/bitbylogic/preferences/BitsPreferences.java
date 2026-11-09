@@ -6,32 +6,66 @@ import net.bitbylogic.orm.BormAPI;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class BitsPreferences extends JavaPlugin {
 
+    private static final String SQLITE_FILE = "database.sqlite";
+
     @Getter
-    private static BitsPreferences instance;
+    private static volatile BitsPreferences instance;
+
+    @Getter
+    private final PreferenceContainer container = new PreferenceContainer();
 
     private BormAPI bormAPI;
-
-    @Getter
-    private PreferenceContainer container;
+    private boolean disabled;
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
 
-        initializeBorm(bormAPI -> {
-            this.bormAPI = bormAPI;
+        DatabaseSettings settings = readDatabaseSettings();
 
-            container = new PreferenceContainer(bormAPI);
-        });
+        CompletableFuture.supplyAsync(() -> createBormAPI(settings))
+                .thenAccept(this::completeInitialization)
+                .exceptionally(e -> {
+                    getLogger().severe("Unable to initialize the preference database: " + e.getMessage());
+                    e.printStackTrace();
+                    return null;
+                });
 
+        setupMetrics();
+    }
+
+    @Override
+    public synchronized void onDisable() {
+        disabled = true;
+        instance = null;
+
+        if (bormAPI == null) {
+            return;
+        }
+
+        bormAPI.close();
+        bormAPI = null;
+    }
+
+    private synchronized void completeInitialization(@NonNull BormAPI bormAPI) {
+        if (disabled) {
+            bormAPI.close();
+            return;
+        }
+
+        this.bormAPI = bormAPI;
+        container.initialize(bormAPI);
+    }
+
+    private void setupMetrics() {
         if (!getConfig().getBoolean("Track-Metrics", true)) {
             return;
         }
@@ -40,47 +74,44 @@ public class BitsPreferences extends JavaPlugin {
         getLogger().info("Thank you for allowing metric tracking!");
     }
 
-    @Override
-    public void onDisable() {
-        bormAPI.close();
+    private @Nullable DatabaseSettings readDatabaseSettings() {
+        ConfigurationSection section = getConfig().getConfigurationSection("Database-Details");
+
+        if (section == null) {
+            return null;
+        }
+
+        String address = section.getString("Address");
+        String database = section.getString("Database");
+
+        if (address == null || address.isEmpty() || database == null || database.isEmpty()) {
+            return null;
+        }
+
+        return new DatabaseSettings(address, database, section.getString("Port", "3306"),
+                section.getString("Username", ""), section.getString("Password", ""));
     }
 
-    private void initializeBorm(@NonNull Consumer<BormAPI> completeConsumer) {
-        if (!getConfig().isSet("Database-Details.Address") || getConfig().getString("Database-Details.Address").isEmpty()
-                || !getConfig().isSet("Database-Details.Database") || getConfig().getString("Database-Details.Database").isEmpty()) {
-            getLogger().severe("Database details not provided, falling back to SQLite!");
-            completeConsumer.accept(new BormAPI(new File("database.sqlite")));
-            return;
+    private BormAPI createBormAPI(@Nullable DatabaseSettings settings) {
+        if (settings == null) {
+            getLogger().warning("Database details not provided, using SQLite!");
+            return createSQLite();
         }
 
-        ConfigurationSection databaseSections = getConfig().getConfigurationSection("Database-Details");
-
-        if (databaseSections == null) {
-            getLogger().severe("Unable to connect to SQL, falling back to SQLite!");
-            completeConsumer.accept(new BormAPI(new File("database.sqlite")));
-            return;
+        try {
+            return new BormAPI(settings.address(), settings.database(), settings.port(), settings.username(), settings.password());
+        } catch (Exception e) {
+            getLogger().severe("Error connecting to SQL: " + e.getMessage() + ", falling back to SQLite!");
+            e.printStackTrace();
+            return createSQLite();
         }
+    }
 
-        CompletableFuture.supplyAsync(() -> new BormAPI(
-                        databaseSections.getString("Address"), databaseSections.getString("Database"),
-                        databaseSections.getString("Port"), databaseSections.getString("Username"),
-                        databaseSections.getString("Password")))
-                .thenAccept((bormAPI) -> {
-                    if (bormAPI == null) {
-                        getLogger().severe("Unable to connect to SQL, falling back to SQLite!");
-                        completeConsumer.accept(new BormAPI(new File("database.sqlite")));
-                        return;
-                    }
+    private BormAPI createSQLite() {
+        return new BormAPI(new File(SQLITE_FILE));
+    }
 
-                    this.bormAPI = bormAPI;
-
-                    completeConsumer.accept(bormAPI);
-                }).exceptionally(e -> {
-                    getLogger().severe("Error connecting to SQL: " + e.getMessage() + ", falling back to SQLite!");
-                    e.printStackTrace();
-                    completeConsumer.accept(new BormAPI(new File("database.sqlite")));
-                    return null;
-                });
+    private record DatabaseSettings(String address, String database, String port, String username, String password) {
     }
 
 }
