@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.2
+
+### Changed
+* Bits-ORM 2.0.1, which starts SQLite on its own when the driver comes from a plugin classloader. The plugin no longer registers JDBC drivers itself
+* The plugin library list uses HikariCP 7.1.0, matching Bits-ORM
+
 ## 1.2.1
 
 Fixes 1.2.0, whose database never started on a real server. Use this release instead of 1.2.0.

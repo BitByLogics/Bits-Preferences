@@ -39,7 +39,7 @@ Download the latest `bits-preferences-bukkit` jar from the [releases page](https
 <dependency>
     <groupId>net.bitbylogic</groupId>
     <artifactId>bits-preferences-bukkit</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>provided</scope>
 </dependency>
 ```

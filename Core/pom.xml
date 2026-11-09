@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.bitbylogic</groupId>
         <artifactId>bits-preferences</artifactId>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
     </parent>
 
     <artifactId>bits-preferences-core</artifactId>
