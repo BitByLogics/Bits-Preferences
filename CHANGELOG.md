@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.1
+
+Fixes 1.2.0, whose database never started on a real server. Use this release instead of 1.2.0.
+
+### Fixed
+* The plugin now registers the SQLite and MySQL JDBC drivers explicitly, so the database starts on Paper
+* Preferences saved before a restart are loaded again: the table now requests data preloading, which Bits-ORM 2.0.0 no longer does by default
+* `PreferenceContainer#isReady()` is only true once stored data has finished loading, so early writes can no longer create duplicate rows
+
+### Changed
+* Bits-ORM 2.0.0
+* The plugin library list uses HikariCP 6.2.1 and sqlite-jdbc 3.54.1.0
+* Updated Maven plugins, test libraries and GitHub Actions
+
 ## 1.2.0
 
 ### Added

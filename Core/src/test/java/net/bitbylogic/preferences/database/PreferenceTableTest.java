@@ -5,11 +5,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 
@@ -24,6 +27,20 @@ class PreferenceTableTest {
         Field field = PreferenceTable.class.getDeclaredField("preferences");
         field.setAccessible(true);
         field.set(table, new ConcurrentHashMap<>());
+    }
+
+    @Test
+    void marksLoadedAndIndexesDataWhenLoaded() {
+        UUID userId = UUID.randomUUID();
+        Preference preference = new Preference(UUID.randomUUID(), userId, "type", "value");
+        doReturn(new ConcurrentHashMap<Object, Preference>(Map.of(preference.getId(), preference))).when(table).getDataMap();
+
+        assertFalse(table.isLoaded());
+
+        table.onDataLoaded();
+
+        assertTrue(table.isLoaded());
+        assertEquals(preference, table.getPreferenceData(userId, "type").orElseThrow());
     }
 
     @Test

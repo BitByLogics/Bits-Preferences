@@ -64,12 +64,22 @@ public class PreferenceContainer {
     }
 
     /**
-     * Checks whether the preference table is available for reading and writing.
+     * Checks whether the preference table is registered and its stored data has finished loading.
      *
-     * @return {@code true} if the table has been registered.
+     * @return {@code true} if preferences can be read and written.
      */
     public boolean isReady() {
-        return table != null;
+        return getReadyTable() != null;
+    }
+
+    private @Nullable PreferenceTable getReadyTable() {
+        PreferenceTable currentTable = table;
+
+        if (currentTable == null || !currentTable.isLoaded()) {
+            return null;
+        }
+
+        return currentTable;
     }
 
     /**
@@ -128,7 +138,7 @@ public class PreferenceContainer {
         }
 
         PreferenceType type = optionalType.get();
-        PreferenceTable currentTable = table;
+        PreferenceTable currentTable = getReadyTable();
 
         if (currentTable == null) {
             return (T) type.getDefaultValue();
@@ -175,7 +185,7 @@ public class PreferenceContainer {
         }
 
         PreferenceType type = optionalType.get();
-        PreferenceTable currentTable = table;
+        PreferenceTable currentTable = getReadyTable();
 
         if (currentTable == null) {
             LOGGER.log(Level.WARNING, "Attempted to set preference " + type.getFriendlyName() + " for user " + userId + " to " + newValue + " failed. Preference table is not ready.");

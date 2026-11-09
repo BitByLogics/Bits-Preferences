@@ -40,6 +40,7 @@ class PreferenceContainerTest {
     void setUp() {
         container = new PreferenceContainer();
         table = mock(PreferenceTable.class);
+        when(table.isLoaded()).thenReturn(true);
         container.registerPreferenceType(new PreferenceType(TYPE_ID, "Example", Boolean.class, true));
     }
 
@@ -70,6 +71,17 @@ class PreferenceContainerTest {
 
         assertTrue(container.isReady());
         assertEquals(table, container.getTable());
+    }
+
+    @Test
+    void notReadyWhileTableDataLoading() {
+        when(table.isLoaded()).thenReturn(false);
+        initializeWithTable();
+
+        container.setPreference(userId, TYPE_ID, false);
+
+        assertFalse(container.isReady());
+        verify(table, never()).add(any());
     }
 
     @Test

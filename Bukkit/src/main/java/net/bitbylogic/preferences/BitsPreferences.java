@@ -98,6 +98,8 @@ public class BitsPreferences extends JavaPlugin {
             return createSQLite();
         }
 
+        registerDriver("com.mysql.cj.jdbc.Driver");
+
         try {
             return new BormAPI(settings.address(), settings.database(), settings.port(), settings.username(), settings.password());
         } catch (Exception e) {
@@ -108,7 +110,16 @@ public class BitsPreferences extends JavaPlugin {
     }
 
     private BormAPI createSQLite() {
+        registerDriver("org.sqlite.JDBC");
         return new BormAPI(new File(SQLITE_FILE));
+    }
+
+    private void registerDriver(@NonNull String driverClass) {
+        try {
+            Class.forName(driverClass);
+        } catch (ClassNotFoundException e) {
+            getLogger().severe("JDBC driver " + driverClass + " is not available: " + e.getMessage());
+        }
     }
 
     private record DatabaseSettings(String address, String database, String port, String username, String password) {

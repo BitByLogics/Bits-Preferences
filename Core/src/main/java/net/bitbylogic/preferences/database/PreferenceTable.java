@@ -1,5 +1,6 @@
 package net.bitbylogic.preferences.database;
 
+import lombok.Getter;
 import lombok.NonNull;
 import net.bitbylogic.orm.BormAPI;
 import net.bitbylogic.orm.data.BormTable;
@@ -15,8 +16,11 @@ public class PreferenceTable extends BormTable<Preference> {
 
     protected final Map<Pair<UUID, String>, Preference> preferences = new ConcurrentHashMap<>();
 
+    @Getter
+    private volatile boolean loaded;
+
     public PreferenceTable(@NonNull BormAPI bormAPI) {
-        super(bormAPI, Preference.class, "preferences");
+        super(bormAPI, Preference.class, "preferences", true);
     }
 
     /**
@@ -38,6 +42,8 @@ public class PreferenceTable extends BormTable<Preference> {
 
             preferences.put(new Pair<>(preference.getUserId(), preference.getTypeId()), preference);
         }
+
+        loaded = true;
     }
 
     @Override
